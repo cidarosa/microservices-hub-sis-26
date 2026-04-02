@@ -26,24 +26,21 @@ public class PedidoService {
     private ItemDoPedidoRepository itemDoPedidoRepository;
 
     @Transactional(readOnly = true)
-    public List<PedidoDto> findAllPedidos(){
-
+    public List<PedidoDto> findAllPedidos() {
         return pedidoRepository.findAll()
                 .stream().map(PedidoDto::new).toList();
     }
 
     @Transactional(readOnly = true)
-    public PedidoDto findPedidoById(Long id){
-
+    public PedidoDto findPedidoById(Long id) {
         Pedido pedido = pedidoRepository.findById(id).orElseThrow(
-                ()-> new ResourceNotFoundException("Recurso não encontrado. ID: "+id)
+                () -> new ResourceNotFoundException("Recurso não encontrado. ID: " + id)
         );
         return new PedidoDto(pedido);
     }
 
     @Transactional
-    public PedidoDto savePedido(PedidoDto pedidoDto){
-
+    public PedidoDto savePedido(PedidoDto pedidoDto) {
         Pedido pedido = new Pedido();
         pedido.setData(LocalDate.now());
         pedido.setStatus(Status.CRIADO);
@@ -53,11 +50,35 @@ public class PedidoService {
         return new PedidoDto(pedido);
     }
 
+    @Transactional
+    public PedidoDto updatePedido(Long id, PedidoDto pedidoDto) {
+        try {
+            Pedido pedido = pedidoRepository.getReferenceById(id);
+            pedido.getItens().clear();
+            pedido.setData(LocalDate.now());
+            pedido.setStatus(Status.CRIADO);
+            mapDtoToPedido(pedidoDto, pedido);
+            pedido.calcularValorTotalDoPedido();
+            pedido = pedidoRepository.save(pedido);
+            return new PedidoDto(pedido);
+        } catch (EntityNotFoundException e) {
+            throw new ResourceNotFoundException("Recurso não encontrado. ID: " + id);
+        }
+    }
+
+    @Transactional
+    public void deletePedidoById(Long id) {
+        if (!pedidoRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Recurso não encontrado. ID: " + id);
+        }
+        pedidoRepository.deleteById(id);
+    }
+
     private void mapDtoToPedido(PedidoDto pedidoDto, Pedido pedido) {
         pedido.setNome(pedidoDto.getNome());
         pedido.setCpf(pedidoDto.getCpf());
 
-        for (ItemDoPedidoDto itemDto : pedidoDto.getItens()){
+        for (ItemDoPedidoDto itemDto : pedidoDto.getItens()) {
             ItemDoPedido itemPedido = new ItemDoPedido();
             itemPedido.setQuantidade(itemDto.getQuantidade());
             itemPedido.setDescricao(itemDto.getDescricao());
@@ -65,31 +86,5 @@ public class PedidoService {
             itemPedido.setPedido(pedido);
             pedido.getItens().add(itemPedido);
         }
-    }
-
-    @Transactional
-    public PedidoDto updatePedido(Long id, PedidoDto pedidoDto){
-
-        try{
-            Pedido pedido = pedidoRepository.getReferenceById(id);
-            pedido.getItens().clear();
-            pedido.setData(LocalDate.now());
-            pedido.setStatus(Status.CRIADO);
-            mapDtoToPedido(pedidoDto,pedido);
-            pedido.calcularValorTotalDoPedido();
-            pedido = pedidoRepository.save(pedido);
-            return new PedidoDto(pedido);
-        }catch (EntityNotFoundException e){
-            throw new ResourceNotFoundException("Recurso não encontrado. ID: "+id);
-        }
-    }
-
-    @Transactional
-    public void  deletePedidoById(Long id){
-
-        if (!pedidoRepository.existsById(id)){
-            throw new ResourceNotFoundException("Recurso não encontrado. ID: "+id);
-        }
-        pedidoRepository.deleteById(id);
     }
 }

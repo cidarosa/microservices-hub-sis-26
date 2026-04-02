@@ -19,40 +19,37 @@ public class PedidoController {
     private PedidoService pedidoService;
 
     @GetMapping
-    public ResponseEntity<List<PedidoDto>> getAll(){
-
+    public ResponseEntity<List<PedidoDto>> getAll() {
         List<PedidoDto> list = pedidoService.findAllPedidos();
-
         return ResponseEntity.ok(list);
     }
-    @GetMapping("/{id}")
-    public ResponseEntity<PedidoDto> getPedido(@PathVariable Long id){
 
+    @GetMapping("/{id}")
+    public ResponseEntity<PedidoDto> getPedido(@PathVariable Long id) {
         PedidoDto pedidoDto = pedidoService.findPedidoById(id);
         return ResponseEntity.ok(pedidoDto);
     }
 
     @PostMapping
-    public ResponseEntity<PedidoDto> createPedido(@RequestBody @Valid PedidoDto pedidoDto){
+    public ResponseEntity<PedidoDto> createPedido(@RequestBody @Valid PedidoDto pedidoDto) {
         pedidoDto = pedidoService.savePedido(pedidoDto);
 
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri()
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(pedidoDto.getId())
                 .toUri();
-        return ResponseEntity.created(uri).body(pedidoDto);
 
+        return ResponseEntity.created(uri).body(pedidoDto);
     }
+
     @PutMapping("/{id}")
-    public ResponseEntity<PedidoDto> updatePedido(@PathVariable Long id,
-                                                  @Valid @RequestBody PedidoDto pedidoDto){
-        pedidoDto = pedidoService.updatePedido(id,pedidoDto);
+    public ResponseEntity<PedidoDto> updatePedido(@PathVariable Long id, @Valid @RequestBody PedidoDto pedidoDto) {
+        pedidoDto = pedidoService.updatePedido(id, pedidoDto);
         return ResponseEntity.ok(pedidoDto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePedido(@PathVariable Long id){
-
+    public ResponseEntity<Void> deletePedido(@PathVariable Long id) {
         pedidoService.deletePedidoById(id);
         return ResponseEntity.noContent().build();
     }

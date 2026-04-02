@@ -20,21 +20,16 @@ import java.time.Instant;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<CustomErrorDTO> handleResourceNotFound(ResourceNotFoundException e,
-                                                                 HttpServletRequest request) {
-        HttpStatus status = HttpStatus.NOT_FOUND; //404
-        CustomErrorDTO err = new CustomErrorDTO(Instant.now(), status.value(),
-                e.getMessage(), request.getRequestURI());
-
+    public ResponseEntity<CustomErrorDTO> handleResourceNotFound(ResourceNotFoundException e, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.NOT_FOUND;
+        CustomErrorDTO err = new CustomErrorDTO(Instant.now(), status.value(), e.getMessage(), request.getRequestURI());
         return ResponseEntity.status(status).body(err);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<CustomErrorDTO> methodArgumentNotValid(MethodArgumentNotValidException e,
-                                                                 HttpServletRequest request) {
+    public ResponseEntity<CustomErrorDTO> methodArgumentNotValid(MethodArgumentNotValidException e, HttpServletRequest request) {
         HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
-        ValidationErrorDTO err = new ValidationErrorDTO(Instant.now(), status.value(),
-                "Dados inválidos", request.getRequestURI());
+        ValidationErrorDTO err = new ValidationErrorDTO(Instant.now(), status.value(), "Dados inválidos", request.getRequestURI());
 
         for (FieldError fieldError : e.getBindingResult().getFieldErrors()) {
             err.addError(fieldError.getField(), fieldError.getDefaultMessage());
@@ -42,51 +37,33 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(err);
     }
 
-    // 400 - JSON malformado / corpo inválido (não dá para desserializar)
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<CustomErrorDTO> handleHttpMessageNotReadable(HttpMessageNotReadableException e,
-                                                                       HttpServletRequest request) {
-
-        HttpStatus status = HttpStatus.BAD_REQUEST; //400
+    public ResponseEntity<CustomErrorDTO> handleHttpMessageNotReadable(HttpMessageNotReadableException e, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
         CustomErrorDTO err = new CustomErrorDTO(Instant.now(), status.value(),
-                "Requisição inválida (JSON malformado ou corpo não interpretável).",
-                request.getRequestURI());
+                "Requisição inválida (JSON malformado ou corpo não interpretável).", request.getRequestURI());
         return ResponseEntity.status(status).body(err);
     }
 
-    // 400 - tipo inválido em PathVariable/RequestParam (ex.: /produtos/abc quando espera Long)
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<CustomErrorDTO> handleTypeMismatch(MethodArgumentNotValidException e,
-                                                             HttpServletRequest request){
-        HttpStatus status = HttpStatus.BAD_REQUEST; //400
+    public ResponseEntity<CustomErrorDTO> handleTypeMismatch(MethodArgumentTypeMismatchException e, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
         CustomErrorDTO err = new CustomErrorDTO(Instant.now(), status.value(),
-                "Requisição inválida (parâmetro com tipo/formato incorreto).",
-                request.getRequestURI());
+                "Requisição inválida (parâmetro com tipo/formato incorreto).", request.getRequestURI());
         return ResponseEntity.status(status).body(err);
     }
 
     @ExceptionHandler(DatabaseException.class)
-    public ResponseEntity<CustomErrorDTO> handleDatabase(DatabaseException e,
-                                                         HttpServletRequest request){
-
-        HttpStatus status = HttpStatus.CONFLICT; //409
-        CustomErrorDTO err = new CustomErrorDTO(Instant.now(), status.value(),
-                e.getMessage(), request.getRequestURI());
-
+    public ResponseEntity<CustomErrorDTO> handleDatabase(DatabaseException e, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.CONFLICT;
+        CustomErrorDTO err = new CustomErrorDTO(Instant.now(), status.value(), e.getMessage(), request.getRequestURI());
         return ResponseEntity.status(status).body(err);
     }
 
-    // 500 - fallback para qualquer erro não tratado
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<CustomErrorDTO> handleGenericException(Exception e,
-                                                                 HttpServletRequest request) {
-        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR; // 500
-        CustomErrorDTO err = new CustomErrorDTO(
-                Instant.now(), status.value(),
-                "Erro interno inesperado.",
-                request.getRequestURI()
-        );
-
+    public ResponseEntity<CustomErrorDTO> handleGenericException(Exception e, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        CustomErrorDTO err = new CustomErrorDTO(Instant.now(), status.value(), "Erro interno inesperado.", request.getRequestURI());
         return ResponseEntity.status(status).body(err);
     }
 }
