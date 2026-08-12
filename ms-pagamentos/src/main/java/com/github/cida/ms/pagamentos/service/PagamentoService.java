@@ -7,6 +7,7 @@ import com.github.cida.ms.pagamentos.entities.Status;
 import com.github.cida.ms.pagamentos.exceptions.PagamentoAprovadoException;
 import com.github.cida.ms.pagamentos.exceptions.ResourceNotFoundException;
 import com.github.cida.ms.pagamentos.repository.PagamentoRepository;
+import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,7 +32,15 @@ public class PagamentoService {
 
         pagamento.setStatus(Status.APROVADO);
         pagamentoRepository.save(pagamento);
-        pedidoClient.confirmarPagamento(pagamento.getPedidoId());
+
+        try {
+            pedidoClient.confirmarPagamento(pagamento.getPedidoId());
+        } catch (FeignException.NotFound e) {
+            throw new ResourceNotFoundException("Pedido não encontrado. ID: " + id);
+        } catch (FeignException e){
+            throw new RuntimeException("Falha ao se comunicar com ms-pedidos");
+        }
+
         return new PagamentoDTO(pagamento);
     }
 
