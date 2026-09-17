@@ -1,7 +1,9 @@
 package com.github.cidarosa.ms.pedidos.service;
 
-import com.github.cidarosa.ms.pedidos.dto.ItemDoPedidoDto;
-import com.github.cidarosa.ms.pedidos.dto.PedidoDto;
+import com.github.cidarosa.ms.pedidos.dto.ItemDoPedidoRequestDto;
+import com.github.cidarosa.ms.pedidos.dto.ItemDoPedidoResponseDto;
+import com.github.cidarosa.ms.pedidos.dto.PedidoRequestDto;
+import com.github.cidarosa.ms.pedidos.dto.PedidoResponseDto;
 import com.github.cidarosa.ms.pedidos.entities.ItemDoPedido;
 import com.github.cidarosa.ms.pedidos.entities.Pedido;
 import com.github.cidarosa.ms.pedidos.entities.Status;
@@ -24,39 +26,39 @@ public class PedidoService {
     @Autowired
     private PedidoRepository pedidoRepository;
 
-    @Autowired
-    private ItemDoPedidoRepository itemDoPedidoRepository;
+//    @Autowired
+//    private ItemDoPedidoRepository itemDoPedidoRepository;
 
     @Transactional(readOnly = true)
-    public List<PedidoDto> findAllPedidos(){
+    public List<PedidoResponseDto> findAllPedidos(){
 
         return pedidoRepository.findAll()
-                .stream().map(PedidoDto::new).toList();
+                .stream().map(PedidoResponseDto::new).toList();
     }
 
     @Transactional(readOnly = true)
-    public PedidoDto findPedidoById(Long id){
+    public PedidoResponseDto findPedidoById(Long id){
 
         Pedido pedido = pedidoRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Recurso não encontrado. ID: " + id)
         );
-        return new PedidoDto(pedido);
+        return new PedidoResponseDto(pedido);
     }
 
     @Transactional
-    public PedidoDto savePedido(PedidoDto pedidoDto){
+    public PedidoResponseDto savePedido(PedidoRequestDto requestDto){
 
         Pedido pedido = new Pedido();
         pedido.setData(LocalDate.now());
         pedido.setStatus(Status.CRIADO);
-        mapDtoToPedido(pedidoDto, pedido);
+        mapDtoToPedido(requestDto, pedido);
         pedido.calcularValorTotalDoPedido();
         pedido = pedidoRepository.save(pedido);
-        return new PedidoDto(pedido);
+        return new PedidoResponseDto(pedido);
     }
 
     @Transactional
-    public PedidoDto updatePedido(Long id, PedidoDto pedidoDto){
+    public PedidoResponseDto updatePedido(Long id, PedidoRequestDto requestDto){
 
         try {
             Pedido pedido = pedidoRepository.getReferenceById(id);
@@ -67,11 +69,11 @@ public class PedidoService {
             }
             pedido.getItens().clear();
             pedido.setData(LocalDate.now());
-//            pedido.setStatus(Status.CRIADO);
-            mapDtoToPedido(pedidoDto, pedido);
+            pedido.setStatus(Status.CRIADO);
+            mapDtoToPedido(requestDto, pedido);
             pedido.calcularValorTotalDoPedido();
             pedido = pedidoRepository.save(pedido);
-            return new PedidoDto(pedido);
+            return new PedidoResponseDto(pedido);
         } catch (EntityNotFoundException e) {
             throw new  ResourceNotFoundException("Recurso não encontrado. ID: " + id);
         }
@@ -99,12 +101,12 @@ public class PedidoService {
         pedidoRepository.save(pedido.get());
     }
 
-    private void mapDtoToPedido(PedidoDto pedidoDto, Pedido pedido) {
+    private void mapDtoToPedido(PedidoRequestDto requestDto, Pedido pedido) {
 
-        pedido.setNome(pedidoDto.getNome());
-        pedido.setCpf(pedidoDto.getCpf());
+        pedido.setNome(requestDto.getNome());
+        pedido.setCpf(requestDto.getCpf());
 
-        for (ItemDoPedidoDto itemDTO : pedidoDto.getItens()){
+        for (ItemDoPedidoRequestDto itemDTO : requestDto.getItens()){
 
             ItemDoPedido itemPedido = new ItemDoPedido();
             itemPedido.setQuantidade(itemDTO.getQuantidade());

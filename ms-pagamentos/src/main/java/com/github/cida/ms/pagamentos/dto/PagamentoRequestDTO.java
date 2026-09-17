@@ -1,8 +1,9 @@
 package com.github.cida.ms.pagamentos.dto;
 
-import com.github.cida.ms.pagamentos.entities.Pagamento;
-import com.github.cida.ms.pagamentos.entities.Status;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,9 +13,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class PagamentoDTO {
-
-    private Long id;
+public class PagamentoRequestDTO {
 
     @NotNull(message = "O campo valor é obrigatório")
     @Positive(message = "O campo valor deve ser um número positivo")
@@ -36,19 +35,8 @@ public class PagamentoDTO {
     @Size(min = 3, max = 3, message = "O campo código de segurança deve ter 3 caracteres")
     private String codigoSeguranca;
 
-    private Status status;
-
     @NotNull(message = "O campo pedido id é obrigatório")
     private Long pedidoId;
 
-        public PagamentoDTO(Pagamento pagamento) {
-        id = pagamento.getId();
-        valor = pagamento.getValor();
-        nome = pagamento.getNome();
-        numeroCartao = pagamento.getNumeroCartao();
-        validade = pagamento.getValidade();
-        codigoSeguranca = pagamento.getCodigoSeguranca();
-        status = pagamento.getStatus();
-        pedidoId = pagamento.getPedidoId();
-    }
+
 }
