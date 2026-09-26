@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS tb_pedido (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    nome VARCHAR(100) NOT NULL,
+    cpf VARCHAR(11) NOT NULL,
+    data DATE NOT NULL,
+    status VARCHAR(35) NOT NULL,
+    valor_total DECIMAL(10, 2) NOT NULL,
+    CONSTRAINT pk_tb_pedido PRIMARY KEY (id)
+);
